@@ -76,3 +76,56 @@ func TestLargeScaleDelete(t *testing.T) {
 		}
 	}
 }
+
+// 测试迭代器的使用
+func TestSkipList_Iterator(t *testing.T) {
+	sl := NewSkipList()
+
+	// 插入一些键值对
+	sl.Put("key1", []byte("value1"))
+	sl.Put("key2", []byte("value2"))
+	sl.Put("key3", []byte("value3"))
+
+	// 创建迭代器
+	it := sl.Iterator()
+
+	// 遍历并验证顺序和值
+	keys := make([]string, 0)
+	values := make([][]byte, 0)
+
+	for it.Valid() {
+		keys = append(keys, it.Key())
+		values = append(values, it.Value())
+		it.Next()
+	}
+
+	// 期望的结果
+	expectedKeys := []string{"key1", "key2", "key3"}
+	expectedValues := [][]byte{[]byte("value1"), []byte("value2"), []byte("value3")}
+
+	// 检查长度是否一致
+	if len(keys) != len(expectedKeys) {
+		t.Errorf("Expected %d keys, got %d", len(expectedKeys), len(keys))
+		return
+	}
+
+	// 检查每个 key 和 value 是否正确
+	for i := 0; i < len(expectedKeys); i++ {
+		if keys[i] != expectedKeys[i] {
+			t.Errorf("Expected key %s at index %d, got %s", expectedKeys[i], i, keys[i])
+		}
+		if string(values[i]) != string(expectedValues[i]) {
+			t.Errorf("Expected value %s at index %d, got %s", expectedValues[i], i, values[i])
+		}
+	}
+}
+
+// 测试空跳表的迭代器行为
+func TestEmptyIterator(t *testing.T) {
+	sl := NewSkipList()
+	it := sl.Iterator()
+
+	if it.Valid() {
+		t.Error("Expected iterator to be invalid on empty skiplist")
+	}
+}
