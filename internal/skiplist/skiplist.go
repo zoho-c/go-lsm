@@ -99,7 +99,33 @@ func (sl *SkipList) Get(key string) (bool, []byte) {
 	return false, nil
 }
 
-// // Remove 从SkipList中按照key删除一个键值对
-// func (sl *SkipList) Remove(key string) bool {
+// Remove 从SkipList中按照key删除一个键值对
+func (sl *SkipList) Remove(key string) {
+	nodesUpdates := make([]*Node, maxLevel)
+	curr := sl.head
+	// 查找插入位置
+	for i := sl.level - 1; i >= 0; i-- {
+		for curr.forward[i] != nil && curr.forward[i].key < key {
+			curr = curr.forward[i]
+		}
+		nodesUpdates[i] = curr
+	}
 
-// }
+	curr = curr.forward[0]
+
+	// 不存在这个key
+	if curr == nil || curr.key != key {
+		return
+	}
+
+	for i := 0; i < sl.level; i++ {
+		if nodesUpdates[i].forward[i] != curr {
+			break
+		}
+		nodesUpdates[i].forward[i] = curr.forward[i]
+	}
+	// 更新当前有效层数（当高层为空时降低层数）
+	for sl.level > 1 && sl.head.forward[sl.level-1] == nil {
+		sl.level--
+	}
+}
