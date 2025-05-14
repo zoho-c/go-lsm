@@ -19,6 +19,8 @@ type SkipList struct {
 	head       *Node
 	level      int
 	randSource *rand.Rand
+	// TODO: 实现对于内存使用量的追踪
+	// TODO: 添加读写锁机制实现对于SkipList的并发访问
 }
 
 // NewSkipList 创建一个新的跳表
@@ -129,3 +131,5 @@ func (sl *SkipList) Remove(key string) {
 		sl.level--
 	}
 }
+
+// TODO: 实现前缀搜索与范围搜索
