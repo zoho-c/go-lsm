@@ -2,6 +2,7 @@ package skiplist
 
 import (
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -132,4 +133,35 @@ func (sl *SkipList) Remove(key string) {
 	}
 }
 
-// TODO: 实现前缀搜索与范围搜索
+// BeginPrefix 找到前缀的起始位置
+func (sl *SkipList) BeginPrefix(prefix string) *Iterator {
+	curr := sl.head
+	for i := sl.level - 1; i >= 0; i-- {
+		for curr.forward[i] != nil && curr.forward[i].key < prefix {
+			curr = curr.forward[i]
+		}
+	}
+	// 到达最低层
+	curr = curr.forward[0]
+	if curr != nil && strings.HasPrefix(curr.key, prefix) {
+		// 匹配到前缀
+		return &Iterator{curr: curr}
+	}
+	return nil
+}
+
+// EndPrefix 找到前缀的终止位置
+func (sl *SkipList) EndPrefix(prefix string) *Iterator {
+	curr := sl.head
+	for i := sl.level - 1; i >= 0; i-- {
+		for curr.forward[i] != nil && curr.forward[i].key < prefix {
+			curr = curr.forward[i]
+		}
+	}
+	// 到达最低层
+	curr = curr.forward[0]
+	for curr != nil && strings.HasPrefix(curr.key, prefix) {
+		curr = curr.forward[0]
+	}
+	return &Iterator{curr: curr}
+}

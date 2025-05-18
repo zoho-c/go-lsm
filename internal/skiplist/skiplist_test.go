@@ -129,3 +129,115 @@ func TestEmptyIterator(t *testing.T) {
 		t.Error("Expected iterator to be invalid on empty skiplist")
 	}
 }
+
+// 测试前缀匹配基础操作
+func TestPrefixPattern(t *testing.T) {
+	sl := NewSkipList()
+
+	sl.Put("111", []byte("111"))
+	sl.Put("112", []byte("111"))
+	sl.Put("113", []byte("111"))
+	sl.Put("121", []byte("111"))
+	sl.Put("122", []byte("111"))
+	sl.Put("123", []byte("111"))
+	sl.Put("131", []byte("111"))
+	sl.Put("132", []byte("111"))
+	sl.Put("133", []byte("111"))
+
+	it := sl.BeginPrefix("11")
+	if it == nil {
+		t.Error("Iterator should not be nil, but get nil")
+	} else if key := it.Key(); key != "111" {
+		t.Errorf("The begin iterator should be %v, but get %v", "111", key)
+	}
+
+	it = sl.BeginPrefix("12")
+	if it == nil {
+		t.Error("Iterator should not be nil, but get nil")
+	} else if key := it.Key(); key != "121" {
+		t.Errorf("The begin iterator should be %v, but get %v", "121", key)
+	}
+
+	it = sl.BeginPrefix("13")
+	if it == nil {
+		t.Error("Iterator should not be nil, but get nil")
+	} else if key := it.Key(); key != "131" {
+		t.Errorf("The begin iterator should be %v, but get %v", "131", key)
+	}
+
+	it = sl.EndPrefix("11")
+	if it == nil {
+		t.Error("Iterator should not be nil, but get nil")
+	} else if key := it.Key(); key != "121" {
+		t.Errorf("The end iterator should be %v, but get %v", "121", key)
+	}
+}
+
+// TestBeginPrefixAndEndPrefix 测试 BeginPrefix 和 EndPrefix 的行为
+func TestBeginPrefixAndEndPrefix(t *testing.T) {
+	sl := NewSkipList()
+
+	// 插入测试数据
+	sl.Put("apple", []byte("0"))
+	sl.Put("apple2", []byte("1"))
+	sl.Put("apricot", []byte("2"))
+	sl.Put("banana", []byte("3"))
+	sl.Put("berry", []byte("4"))
+	sl.Put("cherry", []byte("5"))
+	sl.Put("cherry2", []byte("6"))
+
+	// 测试前缀 "ap"
+	it := sl.BeginPrefix("ap")
+	if it == nil || it.Key() != "apple" {
+		t.Errorf("Expected 'apple', got %q", it.Key())
+	}
+
+	// 测试前缀 "ba"
+	it = sl.BeginPrefix("ba")
+	if it == nil || it.Key() != "banana" {
+		t.Errorf("Expected 'banana', got %q", it.Key())
+	}
+
+	// 测试前缀 "ch"
+	it = sl.BeginPrefix("ch")
+	if it == nil || it.Key() != "cherry" {
+		t.Errorf("Expected 'cherry', got %q", it.Key())
+	}
+
+	// 测试前缀 "z"
+	it = sl.BeginPrefix("z")
+	if it != nil && it.Valid() {
+		t.Errorf("Expected nil or end iterator, got %q", it.Key())
+	}
+
+	// 测试前缀 "berr"
+	it = sl.BeginPrefix("berr")
+	if it == nil || it.Key() != "berry" {
+		t.Errorf("Expected 'berry', got %q", it.Key())
+	}
+
+	// 测试前缀 "a"
+	it = sl.BeginPrefix("a")
+	if it == nil || it.Key() != "apple" {
+		t.Errorf("Expected 'apple', got %q", it.Key())
+	}
+
+	// 测试 end_prefix("a") 应该指向 banana
+	it = sl.EndPrefix("a")
+	if it == nil || it.Key() != "banana" {
+		t.Errorf("Expected end for 'a' to be 'banana', got %q", it.Key())
+	}
+
+	// 测试 end_prefix("cherry") 应该是尾后
+	it = sl.EndPrefix("cherry")
+	if it == nil || it.Valid() {
+		t.Errorf("Expected end iterator, but it is valid")
+	}
+
+	// 测试不存在的前缀
+	beginIt := sl.BeginPrefix("not exist")
+	endIt := sl.EndPrefix("not exist")
+	if beginIt != nil && endIt != nil {
+		t.Errorf("Expected begin and end prefix of 'not exist' to be equal")
+	}
+}
