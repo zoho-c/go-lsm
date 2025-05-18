@@ -165,3 +165,5 @@ func (sl *SkipList) EndPrefix(prefix string) *Iterator {
 	}
 	return &Iterator{curr: curr}
 }
+
+// TODO(Hiroshi): 实现谓词查找
